@@ -1,0 +1,31 @@
+name: Java CI with Maven
+
+on: [push] # Tự động chạy mỗi khi bạn nộp bài lên GitHub
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # Chạy trên máy chủ Linux của GitHub
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # Bước lấy code từ GitHub về máy ảo
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+
+      - name: Build and Test Bai01
+        run: mvn -B test --file Bai01/pom.xml # Tự động chạy Bài 1
+
+      - name: Checkstyle Bai02
+        run: mvn -B checkstyle:check --file Bai02/pom.xml # Tự động chạy Bài 2
+
+      - name: Upload Artifact (Bai 3)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ket-qua-bai-lam
+          path: |
+            Bai01/target/*.jar
+            Bai02/target/*.jar
