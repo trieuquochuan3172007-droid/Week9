@@ -1,12 +1,16 @@
-name: Java CI with Maven (Multi-OS)
+name: Java CI with Maven (Multi-OS & JaCoCo)
 
-on: [push]
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
     strategy:
       matrix:
-        # Đây là phần trọng tâm của Bài 4: Chạy trên cả Linux và Windows
+        # BÀI 4: Chạy trên nhiều hệ điều hành để kiểm thử tính tương thích
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
 
@@ -19,9 +23,30 @@ jobs:
         with:
           java-version: '25'
           distribution: 'temurin'
+          cache: 'maven' # BÀI 6 (Gợi ý): Bật cache để tăng tốc build
 
-      - name: Build and Test Bai01
-        run: mvn -B test --file Bai01/pom.xml
+      # Bước build và chạy test
+      - name: Build and Test with Maven
+        run: mvn clean test
 
-      - name: Checkstyle Bai02
-        run: mvn -B checkstyle:check --file Bai02/pom.xml
+      # BÀI 5: Kích hoạt JaCoCo để kiểm tra độ bao phủ code
+      # Lệnh verify sẽ chạy jacoco:check. Nếu coverage < 80%, bản build sẽ báo đỏ (Fail).
+      - name: Generate JaCoCo Report
+        run: mvn verify
+
+      # BÀI 5: Lưu trữ báo cáo JaCoCo thành Artifact để tải về xem[cite: 1]
+      # Chỉ cần upload report từ một hệ điều hành (thường là ubuntu) để tránh trùng lặp.
+      - name: Upload JaCoCo Report
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/ # Đường dẫn chứa file index.html[cite: 1]
+
+      # BÀI 3: Lưu trữ file .jar thực thi sau khi build thành công[cite: 1]
+      - name: Upload Build Artifact (.jar)
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ket-qua-bai-lam
+          path: target/*.jar
