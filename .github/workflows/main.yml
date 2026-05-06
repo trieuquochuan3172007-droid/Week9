@@ -1,14 +1,18 @@
-name: Java CI with Maven
+name: Java CI with Maven (Multi-OS)
 
-on: [push] # Tự động chạy mỗi khi bạn nộp bài lên GitHub
+on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest # Chạy trên máy chủ Linux của GitHub
+    strategy:
+      matrix:
+        # Đây là phần trọng tâm của Bài 4: Chạy trên cả Linux và Windows
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 # Bước lấy code từ GitHub về máy ảo
+        uses: actions/checkout@v4
 
       - name: Set up JDK 25
         uses: actions/setup-java@v4
@@ -17,15 +21,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build and Test Bai01
-        run: mvn -B test --file Bai01/pom.xml # Tự động chạy Bài 1
+        run: mvn -B test --file Bai01/pom.xml
 
       - name: Checkstyle Bai02
-        run: mvn -B checkstyle:check --file Bai02/pom.xml # Tự động chạy Bài 2
-
-      - name: Upload Artifact (Bai 3)
-        uses: actions/upload-artifact@v4
-        with:
-          name: ket-qua-bai-lam
-          path: |
-            Bai01/target/*.jar
-            Bai02/target/*.jar
+        run: mvn -B checkstyle:check --file Bai02/pom.xml
